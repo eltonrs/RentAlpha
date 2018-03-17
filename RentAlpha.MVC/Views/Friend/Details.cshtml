@@ -1,0 +1,121 @@
+﻿@model RentAlpha.MVC.ViewModels.FriendViewModel
+
+@{ var rentedGames = Model.Games; }
+
+@{
+  ViewBag.Title = "Details";
+}
+
+<h2>Detalhes do Amigo</h2>
+
+<div>
+  <hr />
+  <dl class="dl-horizontal">
+    <dt>
+      @Html.DisplayNameFor(model => model.FirstName)
+    </dt>
+
+    <dd>
+      @Html.DisplayFor(model => model.FirstName)
+    </dd>
+
+    <dt>
+      @Html.DisplayNameFor(model => model.LastaName)
+    </dt>
+
+    <dd>
+      @Html.DisplayFor(model => model.LastaName)
+    </dd>
+
+    <dt>
+      @Html.DisplayNameFor(model => model.NickName)
+    </dt>
+
+    <dd>
+      @Html.DisplayFor(model => model.NickName)
+    </dd>
+
+    <dt>
+      @Html.DisplayNameFor(model => model.Birthday)
+    </dt>
+
+    <dd>
+      @Html.DisplayFor(model => model.Birthday)
+    </dd>
+
+    <dt>
+      @Html.DisplayNameFor(model => model.Email)
+    </dt>
+
+    <dd>
+      @Html.DisplayFor(model => model.Email)
+    </dd>
+
+  </dl>
+</div>
+
+@{ if (rentedGames != null && rentedGames.Count() > 0)
+  {
+    <br />
+    
+    <h3>Jogos Alugados</h3>
+
+    <hr>
+
+    <table class="table table-condensed table-hover">
+      <thead>
+        <tr>
+          <th>@Html.DisplayNameFor(model => model.Games.FirstOrDefault().Title)</th>
+          <th>@Html.DisplayNameFor(model => model.Games.FirstOrDefault().RentalDate)</th>
+          <th>@Html.DisplayNameFor(model => model.Games.FirstOrDefault().DateToDeliver)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var game in rentedGames)
+        {
+          <tr id="@game.GameId">
+            <td>@Html.DisplayFor(x => game.Title)</td>
+            <td>@Html.DisplayFor(x => game.RentalDate)</td>
+            <td>@Html.DisplayFor(x => game.DateToDeliver)</td>
+            <td>
+              @{
+                string onclick = String.Format("returnRentedGame({0})", game.GameId);
+              }
+              <input data-task="taskReturnRentedGame" type="button" value="Devolver" onclick="@onclick" class="btn btn-primary btn-xs">
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+}
+
+
+<p>
+  @Html.ActionLink("Editar", "Edit", new { id = Model.FriendId }) |
+  @Html.ActionLink("Voltar", "Index")
+</p>
+
+<script>
+  var buttons = document.getElementsByTagName('INPUT');
+
+  for (var i = 0; i <= buttons.length; i++) {
+    if (buttons[i].type != 'button')
+      continue;
+
+    switch (buttons[i].getAttribute('data-task') || '') {
+      case 'taskReturnRentedGame':
+        buttons[i].on("click", returnRentedGame);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function returnRentedGame(id) {
+    $.post("/Game/ReturnGame/" + id);
+
+    $('#'+id).remove();
+  }
+</script>

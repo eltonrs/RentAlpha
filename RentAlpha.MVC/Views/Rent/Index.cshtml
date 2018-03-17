@@ -1,0 +1,169 @@
+﻿@model RentAlpha.MVC.ViewModels.RentViewModel
+
+@using PagedList.Mvc;
+
+<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
+
+<style>
+  #myTableFriend td {
+    cursor: pointer;
+  }
+
+  .selected {
+    background-color: #808080;
+    color: #FFF;
+  }
+</style>
+
+@{
+  ViewBag.Title = "Index";
+}
+
+<h2>Alugar</h2>
+
+<hr />
+
+@using (Html.BeginForm())
+{
+  <h4>Amigos</h4>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="input-group">
+          <input id="myInputFriend" type="text" class="form-control" onkeyup="tableFilter()" placeholder="Pesquisar um amigo...">
+        </div>
+      </div>
+    </div>
+
+    <br>
+
+    <table class="table table-hover col-md-8">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome</th>
+          <th>Apelido</th>
+        </tr>
+      </thead>
+      <tbody id="myTableFriend">
+        @for (int i = 0; i < Model.Friends.Count(); i++)
+        {
+          <tr>
+            <td>@Html.DisplayFor(model => Model.Friends.ElementAt(i).FriendId)</td>
+            <td>@Html.DisplayFor(model => Model.Friends.ElementAt(i).FirstName)</td>
+            <td>@Html.DisplayFor(model => Model.Friends.ElementAt(i).LastaName)</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@using (Html.BeginForm("Game"))
+{
+  <h4>Jogos Disponíveis</h4>
+
+  <table id="myTableGame" class="table">
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Data de Lançamento</th>
+        <th>Class. Etária</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (int i = 0; i < Model.Games.Count(); i++)
+      {
+        <tr id="@Model.Games.ElementAt(i).GameId">
+          <td>@Html.DisplayFor(model => Model.Games.ElementAt(i).Title)</td>
+          <td>@Html.DisplayFor(model => Model.Games.ElementAt(i).ReleaseDate)</td>
+          <td>@Html.DisplayFor(model => Model.Games.ElementAt(i).AgeRating)</td>
+          <td>
+            @{
+              string onclick = String.Format("setGameAsRented({0})", Model.Games.ElementAt(i).GameId);
+            }
+            <input data-task="taskSetGameAsRented" type="button" value="Alugar" onclick="@onclick" class="btn btn-primary btn-xs">
+          </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+}
+
+
+
+<script>
+  function tableFilter() {
+    var input, filter, table, tr, td, i;
+    input = document.getElementById("myInputFriend");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("myTableFriend");
+    tr = table.getElementsByTagName("tr");
+
+    for (i = 0; i < tr.length; i++) {
+      td = tr[i].getElementsByTagName("td")[1]; // FirstName
+      if (td) {
+        if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+          tr[i].style.display = "";
+        }
+        else {
+          tr[i].style.display = "none";
+        }
+      }
+    }
+  }
+
+  var tableFriend = document.getElementById("myTableFriend"), rIndex = -1, friendId;
+  for (var i = 0; i < tableFriend.rows.length; i++) {
+    tableFriend.rows[i].onclick = function () {
+      console.log("rIndex (antes): " + rIndex);
+      console.log("this.rowIndex: " + this.rowIndex);
+
+      if (rIndex != this.rowIndex)
+        this.classList.add('selected');
+      else
+        this.classList.remove('selected');
+
+      rIndex = this.rowIndex;
+      console.log("rIndex (depois): " + rIndex);
+      //console.log(this.cells[0].innerHTML);
+      //console.log(this.className);
+
+      friendId = this.cells[0].innerHTML;
+
+      for (var r = 0; r < tableFriend.rows.length; r++) {
+        if (rIndex != tableFriend.rows[r].rowIndex)
+          tableFriend.rows[r].classList.remove('selected');
+      }
+    }
+  }
+
+  var buttons = document.getElementsByTagName('INPUT');
+
+  for (var i = 0; i <= buttons.length; i++) {
+    if (buttons[i].type != 'button')
+      continue;
+
+    switch (buttons[i].getAttribute('data-task') || '') {
+      case 'taskSetGameAsRented':
+        buttons[i].on("click", setGameAsRented);
+        break;
+      default:
+        break;
+    }
+  }
+
+  function setGameAsRented(gameId) {
+    
+    if (typeof friendId != 'undefined' && friendId > 0) {
+      $.post("/Game/SetGameAsRented/" + gameId + "/" + friendId);
+      $('#' + gameId).remove();
+    }
+    else
+      alert("Nenhum amigo selecionado!");
+    
+    //alert("gameId: " + gameId + " - friendId: " + friendId);
+  }
+</script>
